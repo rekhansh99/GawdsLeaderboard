@@ -1,5 +1,4 @@
 const fetch = require('node-fetch');
-const users = require('../models/users');
 
 const getRepos = (user, callback) => {
   fetch('https://api.github.com/users/' + user + '/repos')
@@ -18,19 +17,32 @@ const getCommits = (user, callback) => {
   getRepos(user, repos => {
     let totalCommits = 0;
     const promises = [];
+
     repos.forEach(repo => {
       promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits')
         .then(res => res.json())
-        .then(json => {
-          // console.log(json);
-          totalCommits += json.length;
-        })
-        .catch(err => console.log(err)));
+        .then(json => totalCommits += json.length));
     });
 
     Promise.all(promises).then(() => callback(totalCommits));
   });
 };
 
-exports.getCommits = getCommits;
+const getCommitsSince = (date, user, callback) => {
+  getRepos(user, repos => {
+    let totalCommits = 0;
+    const promises = [];
+
+    repos.forEach(repo => {
+      promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits?since=' + date.toISOString())
+        .then(res => res.json())
+        .then(json => totalCommits += json.length));
+    });
+
+    Promise.all(promises).then(() => callback(totalCommits));
+  });
+};
+
 exports.getRepos = getRepos;
+exports.getCommits = getCommits;
+exports.getCommitsSince = getCommitsSince;
