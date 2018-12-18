@@ -1,7 +1,13 @@
 const fetch = require('node-fetch');
 
+const options = {
+  headers: {
+    'Authorization': 'token 1a97f8a8a172e5cc8812472be428ae266e6bf051'
+  }
+};
+
 const getRepos = (user, callback) => {
-  fetch('https://api.github.com/users/' + user + '/repos')
+  fetch('https://api.github.com/users/' + user + '/repos', options)
     .then(res => res.json())
     .then(json => {
       const repos = [];
@@ -19,7 +25,7 @@ const getCommits = (user, callback) => {
     const promises = [];
 
     repos.forEach(repo => {
-      promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits')
+      promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits', options)
         .then(res => res.json())
         .then(json => totalCommits += json.length));
     });
@@ -34,7 +40,7 @@ const getCommitsSince = (date, user, callback) => {
     const promises = [];
 
     repos.forEach(repo => {
-      promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits?since=' + date.toISOString())
+      promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits?since=' + date.toISOString(), options)
         .then(res => res.json())
         .then(json => totalCommits += json.length));
     });
