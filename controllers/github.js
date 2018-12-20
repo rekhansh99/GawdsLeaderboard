@@ -1,11 +1,14 @@
-const fetch = require('node-fetch');
 const octokit = require('@octokit/rest')();
 
 const getRepos = (user, callback) => {
   octokit.repos.listForUser({
     username: user
   }).then(res => {
-    callback(res);
+    const repos = [];
+    // console.log(res);
+
+    res.data.forEach(repo => repos.push(repo.name));
+    callback(repos);
   });
 };
 
@@ -15,9 +18,11 @@ const getCommits = (user, callback) => {
     const promises = [];
 
     repos.forEach(repo => {
-      promises.push(fetch(`https://api.github.com/repos/${user}/${repo}/commits`, options)
-        .then(res => res.json())
-        .then(json => totalCommits += json.length));
+      promises.push(octokit.repos.listCommits({
+          owner: user,
+          repo: repo,
+        })
+        .then(res => totalCommits += res.data.length));
     });
 
     Promise.all(promises).then(() => callback(totalCommits));
@@ -25,21 +30,24 @@ const getCommits = (user, callback) => {
 };
 
 const getCommitsSince = (date, user, callback) => {
-  getRepos(user, repos => {
+  getRepos(user, since, until, repos => {
     let totalCommits = 0;
     const promises = [];
 
     repos.forEach(repo => {
-      promises.push(fetch(`https://api.github.com/repos/${user}/${repo}/commits?since=${date.toISOString()}`, options)
-        .then(res => res.json())
-        .then(json => totalCommits += json.length));
+      promises.push(octokit.repos.listCommits({
+          owner: user,
+          repo: repo,
+          since: date.toISOString()
+        })
+        .then(res => totalCommits += res.data.length));
     });
 
     Promise.all(promises).then(() => callback(totalCommits));
   });
 };
 
-getRepos('rekhansh99');
+getCommits(new Date('12-10-2018'), 'rekhansh99', commits => console.log(commits));
 exports.getRepos = getRepos;
 exports.getCommits = getCommits;
 exports.getCommitsSince = getCommitsSince;
