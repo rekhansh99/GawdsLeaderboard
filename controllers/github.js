@@ -1,22 +1,12 @@
 const fetch = require('node-fetch');
-
-const options = {
-  headers: {
-    'Authorization': 'token 1a97f8a8a172e5cc8812472be428ae266e6bf051'
-  }
-};
+const octokit = require('@octokit/rest')();
 
 const getRepos = (user, callback) => {
-  fetch('https://api.github.com/users/' + user + '/repos', options)
-    .then(res => res.json())
-    .then(json => {
-      const repos = [];
-      // console.log(json);
-
-      json.forEach(repo => repos.push(repo.name));
-      // console.log(repos);
-      callback(repos);
-    });
+  octokit.repos.listForUser({
+    username: user
+  }).then(res => {
+    callback(res);
+  });
 };
 
 const getCommits = (user, callback) => {
@@ -25,7 +15,7 @@ const getCommits = (user, callback) => {
     const promises = [];
 
     repos.forEach(repo => {
-      promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits', options)
+      promises.push(fetch(`https://api.github.com/repos/${user}/${repo}/commits`, options)
         .then(res => res.json())
         .then(json => totalCommits += json.length));
     });
@@ -40,7 +30,7 @@ const getCommitsSince = (date, user, callback) => {
     const promises = [];
 
     repos.forEach(repo => {
-      promises.push(fetch('https://api.github.com/repos/' + user + '/' + repo + '/commits?since=' + date.toISOString(), options)
+      promises.push(fetch(`https://api.github.com/repos/${user}/${repo}/commits?since=${date.toISOString()}`, options)
         .then(res => res.json())
         .then(json => totalCommits += json.length));
     });
@@ -49,6 +39,7 @@ const getCommitsSince = (date, user, callback) => {
   });
 };
 
+getRepos('rekhansh99');
 exports.getRepos = getRepos;
 exports.getCommits = getCommits;
 exports.getCommitsSince = getCommitsSince;

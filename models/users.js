@@ -1,1 +1,0 @@
-module.exports = ["rekhansh99", "DumbMachine", "kforkaran"];
