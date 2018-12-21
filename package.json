@@ -2,15 +2,14 @@
   "name": "gawdsleaderboard",
   "version": "1.0.0",
   "description": "A Leaderboard of github activity",
-  "main": "app.js",
+  "main": "github.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node github.js"
   },
   "author": "Rekhansh Priyadarshi",
   "license": "ISC",
   "dependencies": {
-    "@octokit/rest": "^16.2.0",
-    "express": "^4.16.4",
-    "node-fetch": "^2.3.0"
+    "@octokit/rest": "^16.2.0"
   }
 }
