@@ -6,12 +6,6 @@ const users = [];
 const userNames = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'users.json')));
 const promises = [];
 
-octokit.authenticate({
-  type: 'basic',
-  username: 'rekhansh99',
-  password: 'Sonu@1999'
-});
-
 for (const year in userNames) {
   userNames[year].forEach(userName => {
     const user = {
@@ -19,6 +13,7 @@ for (const year in userNames) {
       year: year,
       repos: [],
       totalCommits: 0,
+      weeklyCommits: []
     };
 
     promises.push(octokit.repos.listForUser({
@@ -48,11 +43,47 @@ Promise.all(promises).then(() => {
             u = users.find(user => user.name === data.author.login);
             if (u) {
               u.totalCommits += data.total;
+
+              for (let i = data.weeks.length - 1; i >= 0; i--) {
+                if (u.weeklyCommits.length > 0) {
+                  let inserted = false;
+
+                  for (let j = u.weeklyCommits.length - 1; j >= 0; j--) {
+                    if (data.weeks[i].w < u.weeklyCommits[j].w)
+                      continue;
+                    else if (data.weeks[i].w > u.weeklyCommits[j].w) {
+                      for (let k = u.weeklyCommits.length - 1; k > j; k--)
+                        u.weeklyCommits[k + 1] = u.weeklyCommits[k];
+                      u.weeklyCommits[j + 1] = data.weeks[i];
+                      inserted = true;
+                      break;
+                    } else {
+                      u.weeklyCommits[j].a += data.weeks[i].a;
+                      u.weeklyCommits[j].d += data.weeks[i].d;
+                      u.weeklyCommits[j].c += data.weeks[i].c;
+                      inserted = true;
+                      break;
+                    }
+                  }
+
+                  if (!inserted)
+                    u.weeklyCommits.unshift(data.weeks[i]);
+                } else
+                  u.weeklyCommits = data.weeks;
+              }
             }
           });
       }));
     });
   });
 
-  Promise.all(p).then(() => console.log(users));
+  Promise.all(p).then(() => {
+    users.forEach(user => {
+      console.log(user.name);
+      console.log(user.year);
+      console.log(user.repos);
+      console.log(user.totalCommits);
+      console.log(user.weeklyCommits);
+    });
+  });
 });
